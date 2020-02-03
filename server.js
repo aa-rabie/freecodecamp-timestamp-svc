@@ -8,22 +8,33 @@ app.use(cors({optionSuccessStatus: 200}));  // some legacy browsers choke on 204
 
 
 // your first API endpoint... 
-app.get("/api/timestamp/:date_string?", function (req, res) {
-    var strDate = req.params.date_string;
-    console.log('strDate:'+strDate);
+app.get("/api/timestamp", function(req, res) {
     var inputDate = new Date();
-    if(strDate != null && strDate != undefined && strDate != ''){
-        var unixTime = Date.parse(strDate);
-        console.log('unixTime: '+unixTime);
-        if(isNaN(unixTime)){ 
-            res.json({"error" : "Invalid Date" });
-            return;
-        }
-        inputDate.setTime(unixTime);
-        
+  
+    res.json({ unix: inputDate.getTime(), utc: inputDate.toUTCString() });
+  });
+  
+  app.get("/api/timestamp/:date_string", function(req, res) {
+    var strDate = req.params.date_string;
+    console.log("strDate:" + strDate);
+    var inputDate = new Date();
+    if (strDate != null && strDate != undefined && strDate != "") {
+      if (/\d{5,}/.test(strDate)) {
+        var dateInt = parseInt(strDate);
+        //Date regards numbers as unix timestamps, strings are processed differently
+        res.json({ unix: strDate, utc: new Date(dateInt).toUTCString() });
+      }
+  
+      var unixTime = Date.parse(strDate);
+      console.log("unixTime: " + unixTime);
+      if (isNaN(unixTime)) {
+        res.json({ error: "Invalid Date" });
+        return;
+      }
+      inputDate.setTime(unixTime);
     }
-    res.json({"unix": inputDate.getTime(), "utc" : inputDate.toUTCString() })
-});
+    res.json({ unix: inputDate.getTime(), utc: inputDate.toUTCString() });
+  });
 
 
 
